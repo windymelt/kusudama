@@ -24,7 +24,8 @@ class Kusudama extends Task {
 
         const centerX = ctx.cctx.canvas.width / 2;
         const centerY = ctx.cctx.canvas.height / 2;
-        for (var n = 0; n < 20; n++) {
+        const power = parseInt((document.querySelector("#power")! as HTMLInputElement).value)
+        for (var n = 0; n < power; n++) {
             ctx.taskSys.addTask(new KamiParticle(centerX, centerY + this.size / 2));
         }
     }
