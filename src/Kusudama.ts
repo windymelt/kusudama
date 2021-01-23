@@ -20,6 +20,7 @@ class Kusudama extends Task {
     }
 
     open(ctx: Ctx): void {
+        this.openAngle = 0;
         this.pulled = true;
 
         const centerX = ctx.cctx.canvas.width / 2;
