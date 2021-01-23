@@ -3,15 +3,29 @@ import { TaskSys } from './TaskSys';
 import { SlideinText } from './texts/SlideinText';
 import { BPM } from './BPM';
 import { TiledText } from './texts/TiledText';
+import { PixelRepeatGlitch } from './glitch/PixelRepeatGlitch';
 
 class Universe {
     ts: TaskSys;
-    kusu: Kusudama;
-    
+    kusu?: Kusudama;
+
     registerEvents(): void {
         const canvas: HTMLCanvasElement = document.getElementById('canvas') as HTMLCanvasElement;
 
-        this.ts.observer.register('open', (ctx) => this.kusu.open(ctx));
+        canvas.addEventListener('click', () => this.ts.fire('open'));
+        document.querySelector("#apply")?.addEventListener('click', () => {
+            this.start();
+        })
+    }
+
+    constructor() {
+        this.ts = new TaskSys();
+    }
+
+    start() {
+        this.ts.halt();
+        this.ts = new TaskSys();
+        this.ts.observer.register('open', (ctx) => this.kusu!.open(ctx));
         this.ts.observer.register('open', (ctx) => {
             if (!(document.querySelector("#party-mode")! as HTMLInputElement).checked) {
                 return;
@@ -71,19 +85,15 @@ class Universe {
                 ][Math.floor(Math.random() * 8)]()
             }, true, 300, 1000));
         });
-        canvas.addEventListener('click', () => this.ts.fire('open'));
-    }
-
-    constructor() {
-        this.ts = new TaskSys();
         this.kusu = new Kusudama();
-    }
-
-    start() {
-        this.registerEvents();
-        this.ts.addTask(this.kusu);
+        this.ts.addTask(this.kusu!);
+        if ((document.querySelector("#block-glitch-mode")! as HTMLInputElement).checked) {
+            this.ts.addTask(new PixelRepeatGlitch())
+        }
         this.ts.run();
     }
 }
 
-new Universe().start();
+const universe = new Universe();
+universe.registerEvents();
+universe.start();

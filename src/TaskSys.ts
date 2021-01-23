@@ -33,6 +33,7 @@ class TaskSys {
     frameLimit = 3; // 3 ≈ 30fps
     canvas: HTMLCanvasElement;
     observer: Observer;
+    isHalted: boolean = false;
 
     constructor() {
         this.tasks = [new DummyTask];
@@ -43,13 +44,15 @@ class TaskSys {
     }
 
     addTask(t: Task) {
+        if (this.isHalted) return;
         this.tasks.push(t);
     }
 
     fire(ev: string): void {
+        if (this.isHalted) return;
         const cctx = this.canvas.getContext('2d');
         if (!cctx) return;
-        this.observer.fire(ev, {cctx: cctx, taskSys: this})
+        this.observer.fire(ev, { cctx: cctx, taskSys: this })
     }
 
     private frameOut() {
@@ -57,12 +60,23 @@ class TaskSys {
 
         // postprocess
         this.postProcess();
-        
+
+        if (this.isHalted) return;
         // re-run tasks
         this.run();
     }
 
+    halt() {
+        this.isFrameOut = true;
+        this.isHalted = true;
+        this.tasks.forEach(t => t.finish());
+        //this.postProcessTasks.forEach(t => t.finish());
+        this.tasks = [];
+        this.observer.eventTohandlers = {};
+    }
+
     run() {
+        this.isHalted = false;
         // main task system
         this.isFrameOut = false;
         setTimeout(() => this.frameOut(), this.frameLimit)
@@ -81,6 +95,15 @@ class TaskSys {
         // frame end.
         // remove finished tasks.
         this.tasks = this.tasks.filter((t) => !t.isFinished);
+        this.tasks.sort((a, b) => {
+            if (a.nice < b.nice) {
+                return -1;
+            } else if (a.nice == b.nice) {
+                return 0;
+            } else {
+                return 1;
+            }
+        });
     }
 
     postProcess(): void {

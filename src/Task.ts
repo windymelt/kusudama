@@ -3,9 +3,11 @@ import { Ctx } from './TaskSys';
 abstract class Task {
     abstract proc(c: Ctx): void;
     isFinished: boolean;
+    nice: number = 0;
 
-    constructor() {
+    constructor(nice: number = 0) {
         this.isFinished = false;
+        this.nice = nice;
     }
 
     finish() {
